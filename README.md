@@ -1,8 +1,17 @@
-## Build status
-[![Build Status](https://dev.azure.com/ktharchitecture/logspout-gelf-tls/_apis/build/status/mictsi.logspout-gelf-tls?branchName=master)](https://dev.azure.com/ktharchitecture/logspout-gelf-tls/_build/latest?definitionId=5&branchName=master)
-
 # Logspout with GELF adapter and TCP+TLS support
 A logspout docker image with TLS support. 
+
+This repository and build is based on https://github.com/mictsi/logspout-gelf-tls (https://hub.docker.com/r/kthse/logspout-gelf-tls).
+
+There are 2 differences with the original:
+- trailing zero-char in GELF payload was removed as it was crashing `seq-input-gelf` which I'm using in my setup.
+- hostname is set using `/etc/host_hostname` if it is available. Patch for that is taken from `logseq` upstream.
+- All the rest is credited to original authors
+
+The only scenario tested by me is logseq-gelf-tls --(udp)-> seq-intput-gelf. All other scenarios are untested.
+
+## Description
+
 
 This image contains [Logspout](https://github.com/gliderlabs/logspout) which is compiled with [GELF adapter] and originally forked from https://github.com/karlvr/logspout-gelf so you can forward Docker logs in GELF to a Graylog server.
 
