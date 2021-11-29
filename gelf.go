@@ -126,7 +126,7 @@ func (a *GelfAdapter) Stream(logstream chan *router.Message) {
 			Host:          messageHostname,
 			ShortMessage:  shortMessage,
 			FullMessage:   fullMessage,
-			Timestamp:     float64(m.Time.UnixNano()) / float64(time.Second),
+			Timestamp:     float64(m.Time.UnixNano()/int64(time.Millisecond)) / 1000.0,
 			Level:         gelf.LOG_INFO,
 			ContainerId:   m.Container.ID,
 			ContainerName: m.Container.Name[1:], // might be better to use strings.TrimLeft() to remove the first /
@@ -249,7 +249,7 @@ type GelfMessage struct {
 	ShortMessage string  `json:"short_message"`
 	FullMessage  string  `json:"full_message,omitempty"`
 	Timestamp    float64 `json:"timestamp,omitempty"`
-	Level        int     `json:"level,omitempty"`
+	Level        int32   `json:"level,omitempty"`
 
 	ImageId       string `json:"_image_id,omitempty"`
 	ImageName     string `json:"_image_name,omitempty"`
