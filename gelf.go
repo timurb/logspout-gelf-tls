@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Graylog2/go-gelf/gelf"
+	"github.com/gliderlabs/logspout/router"
 	"io/ioutil"
 	"log"
 	"net"
@@ -12,14 +14,12 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"github.com/gliderlabs/logspout/router"
-	"github.com/Graylog2/go-gelf/gelf"
 )
 
 const defaultRetryCount = 10
 
 var (
-	hostname string
+	hostname         string
 	retryCount       uint
 	econnResetErrStr string
 )
@@ -68,8 +68,8 @@ func getHostname() string {
 
 // GelfAdapter is an adapter that streams UDP JSON to Graylog
 type GelfAdapter struct {
-	conn  net.Conn
-	route *router.Route
+	conn      net.Conn
+	route     *router.Route
 	transport router.AdapterTransport
 }
 
@@ -113,7 +113,7 @@ func (a *GelfAdapter) Stream(logstream chan *router.Message) {
 		if shortMessage == "" {
 			continue
 		}
-		
+
 		fullMessage := ""
 		shortMessageNewLine := strings.Index(shortMessage, "\n")
 		if shortMessageNewLine != -1 {
@@ -122,18 +122,18 @@ func (a *GelfAdapter) Stream(logstream chan *router.Message) {
 		}
 
 		msg := GelfMessage{
-			Version:        "1.1",
-			Host:           messageHostname,
-			ShortMessage:   shortMessage,
-			FullMessage:    fullMessage,
-			Timestamp:      float64(m.Time.UnixNano()/int64(time.Millisecond)) / 1000.0,
-			Level:          gelf.LOG_INFO,
-			ContainerId:    m.Container.ID,
-			ContainerName:  m.Container.Name[1:], // might be better to use strings.TrimLeft() to remove the first /
-			ContainerCmd:   strings.Join(m.Container.Config.Cmd," "),
-			ImageId:        m.Container.Image,
-			ImageName:      m.Container.Config.Image,
-			Created:        m.Container.Created.Format(time.RFC3339Nano),
+			Version:       "1.1",
+			Host:          messageHostname,
+			ShortMessage:  shortMessage,
+			FullMessage:   fullMessage,
+			Timestamp:     float64(m.Time.UnixNano()/int64(time.Millisecond)) / 1000.0,
+			Level:         gelf.LOG_INFO,
+			ContainerId:   m.Container.ID,
+			ContainerName: m.Container.Name[1:], // might be better to use strings.TrimLeft() to remove the first /
+			ContainerCmd:  strings.Join(m.Container.Config.Cmd, " "),
+			ImageId:       m.Container.Image,
+			ImageName:     m.Container.Config.Image,
+			Created:       m.Container.Created.Format(time.RFC3339Nano),
 		}
 
 		if m.Source == "stderr" {
@@ -145,7 +145,7 @@ func (a *GelfAdapter) Stream(logstream chan *router.Message) {
 			log.Println("Graylog:", err)
 			continue
 		}
-		
+
 		if len(extra) > 2 {
 			js = append(js[:len(js)-1], ',')
 			js = append(js, extra[1:]...)
@@ -251,18 +251,17 @@ type GelfMessage struct {
 	Timestamp    float64 `json:"timestamp,omitempty"`
 	Level        int32   `json:"level,omitempty"`
 
-	ImageId        string `json:"_image_id,omitempty"`
-	ImageName      string `json:"_image_name,omitempty"`
-	ContainerId    string `json:"_container_id,omitempty"`
-	ContainerName  string `json:"_container_name,omitempty"`
-	ContainerCmd   string `json:"_command,omitempty"`
-	Created        string `json:"_created,omitempty"`
+	ImageId       string `json:"_image_id,omitempty"`
+	ImageName     string `json:"_image_name,omitempty"`
+	ContainerId   string `json:"_container_id,omitempty"`
+	ContainerName string `json:"_container_name,omitempty"`
+	ContainerCmd  string `json:"_command,omitempty"`
+	Created       string `json:"_created,omitempty"`
 }
 
 func extraFields(m *router.Message) (json.RawMessage, error) {
 
-	extra := map[string]interface{}{
-	}
+	extra := map[string]interface{}{}
 	for name, label := range m.Container.Config.Labels {
 		if len(name) > 5 && strings.ToLower(name[0:5]) == "gelf_" {
 			extra[name[4:]] = label
