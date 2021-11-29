@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -59,7 +60,6 @@ func getHostname() string {
 		hostname = strings.TrimRight(string(content), "\r\n")
 	} else {
 		hostname, _ = os.Hostname()
-		hostname = cfg.GetEnvDefault("SYSLOG_HOSTNAME", "{{.Container.Config.Hostname}}")
 	}
 
 	return hostname
