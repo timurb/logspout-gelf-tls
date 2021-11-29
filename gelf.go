@@ -151,8 +151,6 @@ func (a *GelfAdapter) Stream(logstream chan *router.Message) {
 			js = append(js, extra[1:]...)
 		}
 
-		js = append(js, 0)
-
 		_, err = a.conn.Write(js)
 		if err != nil {
 			log.Println("Graylog:", err)
